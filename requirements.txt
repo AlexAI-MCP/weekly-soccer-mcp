@@ -1,8 +1,4 @@
-# stdio 방식용
-mcp>=1.0.0
-
-# HTTP 방식용 (Railway 배포)
-fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
-pydantic>=2.9.0
-httpx>=0.27.0
+fastapi==0.115.12
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+httpx==0.28.2
