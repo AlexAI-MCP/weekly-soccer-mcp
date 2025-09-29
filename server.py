@@ -27,6 +27,12 @@ class MCPRequest(BaseModel):
     method: str
     params: Dict[str, Any] = {}
 
+class MCPResponse(BaseModel):
+    jsonrpc: str = "2.0"
+    id: Any
+    result: Any = None
+    error: Dict[str, Any] = None
+
 # 지원 리그 목록
 SUPPORTED_LEAGUES = [
     "프리미어리그", "EPL", "Premier League",
@@ -434,10 +440,9 @@ async def health():
 @app.post("/mcp")
 async def mcp_endpoint(request: MCPRequest):
     if request.method == "initialize":
-        return {
-            "jsonrpc": "2.0",
-            "id": request.id,
-            "result": {
+        response = MCPResponse(
+            id=request.id,
+            result={
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
                 "serverInfo": {
@@ -445,14 +450,15 @@ async def mcp_endpoint(request: MCPRequest):
                     "version": "1.0.0"
                 }
             }
-        }
+        )
+        return response.dict()
     
     elif request.method == "tools/list":
-        return {
-            "jsonrpc": "2.0",
-            "id": request.id,
-            "result": {"tools": TOOLS}
-        }
+        response = MCPResponse(
+            id=request.id,
+            result={"tools": TOOLS}
+        )
+        return response.dict()
     
     elif request.method == "tools/call":
         tool_name = request.params.get("name", "")
@@ -460,25 +466,25 @@ async def mcp_endpoint(request: MCPRequest):
         
         result = await execute_tool(tool_name, arguments)
         
-        return {
-            "jsonrpc": "2.0",
-            "id": request.id,
-            "result": {
+        response = MCPResponse(
+            id=request.id,
+            result={
                 "content": [
                     {"type": "text", "text": result}
                 ]
             }
-        }
+        )
+        return response.dict()
     
     else:
-        return {
-            "jsonrpc": "2.0",
-            "id": request.id,
-            "error": {
+        response = MCPResponse(
+            id=request.id,
+            error={
                 "code": -32601,
                 "message": f"Method not found: {request.method}"
             }
-        }
+        )
+        return response.dict()
 
 if __name__ == "__main__":
     import uvicorn
